@@ -23,4 +23,9 @@ public class UserPo {
      * 用户微信头像
      */
     private String avatarUrl;
+
+    /**
+     * 用户是否有权利创建会议室
+     */
+    private Boolean creatAuth;
 }

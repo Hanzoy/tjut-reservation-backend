@@ -3,11 +3,38 @@
 <mapper namespace="com.hanzoy.tjutreservation.mapper.UserMapper">
     <select id="selectUserByOpenid" resultType="com.hanzoy.tjutreservation.pojo.po.UserPo">
         select
-               openid, name, nick_name AS nickName, avatar_url AS avatarUrl
+               openid, name, nick_name AS nickName, avatar_url AS avatarUrl, creat_auth AS creatAuth
         from
              tjut_reservation.users
         where
               openid = #{openid};
     </select>
 
+    <select id="selectUserByName" resultType="com.hanzoy.tjutreservation.pojo.po.UserPo">
+        select
+            openid, name, nick_name AS nickName, avatar_url AS avatarUrl, creat_auth AS creatAuth
+        from
+            tjut_reservation.users
+        where
+            name = #{name};
+    </select>
+
+    <update id="updateUserByOpneidWithOpenid">
+        update
+            tjut_reservation.users
+        set
+            openid = #{newOpenid},
+            name = #{name},
+            nick_name = #{nickName},
+            avatar_url = #{avatarUrl},
+            creat_auth = #{creatAuth}
+        where
+              openid = #{openid};
+    </update>
+
+    <insert id="insertUser">
+        insert into
+            tjut_reservation.users(openid, name, nick_name, avatar_url, creat_auth)
+            VALUES (#{openid}, #{name}, #{nickName}, #{avatarUrl}, #{creatAuth});
+    </insert>
 </mapper>
