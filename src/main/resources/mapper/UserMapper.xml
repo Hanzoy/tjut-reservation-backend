@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanzoy.tjutreservation.mapper.UserMapper">
+    <select id="selectUserByOpenid" resultType="com.hanzoy.tjutreservation.pojo.po.UserPo">
+        select
+               openid, name, nick_name AS nickName, avatar_url AS avatarUrl
+        from
+             tjut_reservation.users
+        where
+              openid = #{openid};
+    </select>
+
+</mapper>
