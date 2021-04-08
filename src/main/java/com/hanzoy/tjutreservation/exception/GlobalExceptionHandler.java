@@ -42,4 +42,9 @@ public class GlobalExceptionHandler {
     public CommonResult handleHttpMessageNotReadableException(HttpMessageNotReadableException e){
         return CommonResult.paramError("请求参数解析异常");
     }
+
+    @ExceptionHandler(NumberFormatException.class)
+    public CommonResult numberFormatException(NumberFormatException e){
+        return CommonResult.serverError("数字解析异常");
+    }
 }

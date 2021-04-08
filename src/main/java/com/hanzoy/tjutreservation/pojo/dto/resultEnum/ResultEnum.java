@@ -6,7 +6,9 @@ package com.hanzoy.tjutreservation.pojo.dto.resultEnum;
 public enum ResultEnum {
     SUCCESS("00000", "请求成功"),
     PARAM_ERROR("A0400", "用户请求参数错误"),
-    WECHAT_SERVER_ERROR("C0001", "微信服务接口错误");
+    WECHAT_SERVER_ERROR("C0001", "微信服务接口错误"),
+    TOKEN_ERROR("A0220", "用户身份验证错误"),
+    SERVER_ERROR("B0001", "服务器执行错误");
     private String code;
     private String message;
 

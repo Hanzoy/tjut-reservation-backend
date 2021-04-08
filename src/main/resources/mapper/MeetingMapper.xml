@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hanzoy.tjutreservation.mapper.MeetingMapper">
+    <insert id="insertMeeting" useGeneratedKeys="true" keyColumn="id">
+        insert into
+            tjut_reservation.meeting(name, creator, room_id, date, start_time, end_time, content)
+            VALUES(#{name}, #{openid}, #{roomId}, #{date}, #{startTime}, #{endTime}, #{content})
+    </insert>
+
+    <select id="selectMeetingByDate" resultType="com.hanzoy.tjutreservation.pojo.po.MeetingPo">
+        select
+               id, name, creator, room_id AS roomId, date, start_time AS startTime, end_time AS endTime, content
+        from
+             tjut_reservation.meeting
+        where
+              date = #{date};
+    </select>
+
+    <select id="selectRoomById" resultType="com.hanzoy.tjutreservation.pojo.po.MeetingRoomPo">
+        select
+               id, name, date, time, remark
+        from
+             tjut_reservation.meeting_room
+        where
+              id = #{id};
+    </select>
+</mapper>

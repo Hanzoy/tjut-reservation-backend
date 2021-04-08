@@ -58,4 +58,20 @@ public class CommonResult {
     public static CommonResult paramError(){
         return new CommonResult(ResultEnum.PARAM_ERROR, null);
     }
+
+    public static CommonResult tokenError(String message){
+        return new CommonResult(ResultEnum.TOKEN_ERROR.getCode(), message);
+    }
+
+    public static CommonResult tokenError(){
+        return new CommonResult(ResultEnum.TOKEN_ERROR, null);
+    }
+
+    public static CommonResult serverError(String message){
+        return new CommonResult(ResultEnum.SERVER_ERROR.getCode(), message);
+    }
+
+    public static CommonResult serverError(){
+        return new CommonResult(ResultEnum.SERVER_ERROR, null);
+    }
 }

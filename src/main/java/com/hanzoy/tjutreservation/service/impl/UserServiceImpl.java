@@ -1,6 +1,7 @@
 package com.hanzoy.tjutreservation.service.impl;
 
 import com.hanzoy.tjutreservation.mapper.UserMapper;
+import com.hanzoy.tjutreservation.pojo.bo.UserTokenInfo;
 import com.hanzoy.tjutreservation.pojo.dto.CommonResult;
 import com.hanzoy.tjutreservation.pojo.dto.param.LoginAuthParam;
 import com.hanzoy.tjutreservation.pojo.dto.param.LoginParam;
@@ -14,11 +15,13 @@ import com.hanzoy.tjutreservation.utils.WechatUtils.dto.AuthorizationResult;
 import com.hanzoy.utils.JWTUtils.JWTUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
 
     @Autowired
@@ -59,7 +62,7 @@ public class UserServiceImpl implements UserService {
                 loginResult.setNeedAuth(false);
 
                 //将openid与name写入token中
-                String token = jwtUtils.createTokenCustomFields(user, "openid", "name");
+                String token = writeUserToToken(user);
                 //设置token
                 loginResult.setToken(token);
             }
@@ -86,7 +89,7 @@ public class UserServiceImpl implements UserService {
             ArrayList<UserPo> users = userMapper.selectUserByName(param.getName());
 
             //是否存在预设标志
-            Boolean havePresupposition = false;
+            boolean havePresupposition = false;
             //遍历users并查看是否有avatar_url为空的user
             for (UserPo user : users) {
                 //当查找到存在有user，其avatar_url为空的时，完善该user
@@ -108,7 +111,7 @@ public class UserServiceImpl implements UserService {
                             param.getAvatarUrl(),
                             true);
                     //将openid与name写入token中
-                    String token = jwtUtils.createTokenCustomFields(user, "openid", "name");
+                    String token = writeUserToToken(user);
                     //设置token
                     loginAuthResult.setToken(token);
                     break;
@@ -146,7 +149,7 @@ public class UserServiceImpl implements UserService {
                 }
 
                 //将openid与name写入token中
-                String token = jwtUtils.createTokenCustomFields(user, "openid", "name");
+                String token = writeUserToToken(user);
                 //设置token
                 loginAuthResult.setToken(token);
             }
@@ -156,5 +159,15 @@ public class UserServiceImpl implements UserService {
             return CommonResult.fail(ResultEnum.WECHAT_SERVER_ERROR.getCode(), authorizationResult.getErrmsg());
         }
         return CommonResult.success(loginAuthResult);
+    }
+
+    @Override
+    public String writeUserToToken(Object user) {
+        return jwtUtils.createTokenCustomFields(user, "openid", "name");
+    }
+
+    @Override
+    public UserTokenInfo getUserTokenInfo(String token) {
+        return jwtUtils.getBean(token, UserTokenInfo.class);
     }
 }
