@@ -67,4 +67,39 @@
             p.user = #{openid}
         order by date DESC, startTime DESC;
     </select>
+
+    <select id="selectMeetingById" resultType="com.hanzoy.tjutreservation.pojo.dto.result.GetReservationResult">
+        select
+            m.id, m.name, u.name as creator, mr.name AS meetingName, m.date, CONCAT(start_time , '-', end_time) AS time, content
+        from
+             tjut_reservation.meeting m
+                 left join
+                 tjut_reservation.users u
+                     on u.openid = m.creator left join tjut_reservation.meeting_room mr on mr.id = m.room_id
+        where
+              m.id = #{id};
+    </select>
+
+    <select id="selectIsCreator" resultType="integer">
+        select
+               id
+        from
+             tjut_reservation.meeting
+        where
+              id = #{id}
+          and
+              creator = #{openid};
+    </select>
+
+    <select id="selectParticipantList" resultType="com.hanzoy.tjutreservation.pojo.dto.result.GetReservationResult$User">
+        select
+               u.openid AS id, u.name, u.nick_name AS nickName, u.avatar_url AS avatarUrl
+        from
+             tjut_reservation.participant p
+                 left join
+                 tjut_reservation.users u
+                     on u.openid = p.user
+        where
+              p.meeting = #{id};
+    </select>
 </mapper>

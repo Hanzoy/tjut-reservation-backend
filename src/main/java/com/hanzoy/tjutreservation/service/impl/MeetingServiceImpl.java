@@ -4,8 +4,10 @@ import com.hanzoy.tjutreservation.mapper.MeetingMapper;
 import com.hanzoy.tjutreservation.pojo.bo.UserTokenInfo;
 import com.hanzoy.tjutreservation.pojo.dto.CommonResult;
 import com.hanzoy.tjutreservation.pojo.dto.param.GetMyReservationsParam;
+import com.hanzoy.tjutreservation.pojo.dto.param.GetReservationParam;
 import com.hanzoy.tjutreservation.pojo.dto.param.PostReservationParam;
 import com.hanzoy.tjutreservation.pojo.dto.result.GetMyReservationsResult;
+import com.hanzoy.tjutreservation.pojo.dto.result.GetReservationResult;
 import com.hanzoy.tjutreservation.pojo.dto.resultEnum.ResultEnum;
 import com.hanzoy.tjutreservation.pojo.po.MeetingPo;
 import com.hanzoy.tjutreservation.pojo.po.MeetingRoomPo;
@@ -141,6 +143,38 @@ public class MeetingServiceImpl implements MeetingService {
         }
         //将该月会议数据写入result中
         result.setInfo(info);
+        return CommonResult.success(result);
+    }
+
+    @Override
+    public CommonResult getReservation(GetReservationParam param) {
+        //是否允许非本会议的人查看会议信息
+        boolean ifAnotherPeopleCanWatchIt = false;
+
+        //aop实现token校验
+
+        //创建返回体实体对象
+        GetReservationResult result;
+        //获取openid
+        String openid = userService.getUserTokenInfo(param.getToken()).getOpenid();
+        //从数据库中获取会议信息
+        result = meetingMapper.selectMeetingById(new Integer(param.getId()));
+        //设置是否为创建者
+        result.setIsCreator(meetingMapper.selectIsCreator(param.getId(), openid) != null);
+
+        ArrayList<GetReservationResult.User> users = meetingMapper.selectParticipantList(param.getId());
+
+        boolean flag = false;//是否是会议成员
+        for (GetReservationResult.User user : users) {
+            if(user.getId().equals(openid)){
+                flag = true;
+            }
+        }
+        if(!flag && !ifAnotherPeopleCanWatchIt){
+            return CommonResult.authError();
+        }
+        result.setParticipant(users);
+
         return CommonResult.success(result);
     }
 

@@ -74,4 +74,12 @@ public class CommonResult {
     public static CommonResult serverError(){
         return new CommonResult(ResultEnum.SERVER_ERROR, null);
     }
+
+    public static CommonResult authError(String message){
+        return new CommonResult(ResultEnum.AUTH_ERROR.getCode(), message);
+    }
+
+    public static CommonResult authError(){
+        return new CommonResult(ResultEnum.AUTH_ERROR, null);
+    }
 }
