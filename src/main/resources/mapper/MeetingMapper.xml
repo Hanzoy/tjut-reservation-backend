@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.hanzoy.tjutreservation.mapper.MeetingMapper">
-    <insert id="insertMeeting" useGeneratedKeys="true" keyColumn="id">
+    <insert id="insertMeeting" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
         insert into
             tjut_reservation.meeting(name, creator, room_id, date, start_time, end_time, content)
-            VALUES(#{name}, #{openid}, #{roomId}, #{date}, #{startTime}, #{endTime}, #{content})
+            VALUES(#{name}, #{creator}, #{roomId}, #{date}, #{startTime}, #{endTime}, #{content})
     </insert>
 
     <select id="selectMeetingByDate" resultType="com.hanzoy.tjutreservation.pojo.po.MeetingPo">
@@ -23,5 +23,48 @@
              tjut_reservation.meeting_room
         where
               id = #{id};
+    </select>
+
+    <insert id="insertParticipant" useGeneratedKeys="true" keyColumn="id">
+        insert into tjut_reservation.participant(user, meeting) VALUES (#{openid}, #{meeting})
+    </insert>
+
+    <select id="selectCountForYearByMonth" resultType="int">
+        select
+               COUNT(m.id)
+        from
+             tjut_reservation.meeting m
+        left join
+                tjut_reservation.participant p
+        on
+            p.meeting = m.id
+        where
+              date like CONCAT(#{year}, '-%', #{month}, '-%')
+        and
+            p.user = #{openid};
+    </select>
+
+    <select id="selectMeetingByYearAndMonth" resultType="com.hanzoy.tjutreservation.pojo.po.MeetingPo">
+        select
+            m.id, m.name, u.name AS creator, r.name AS roomId, m.date, m.start_time AS startTime, end_time AS endTime
+        from
+            tjut_reservation.meeting m
+                left join
+                    tjut_reservation.users u
+                on
+                    m.creator = u.openid
+                left join
+                    tjut_reservation.meeting_room r
+                on
+                    m.room_id = r.id
+                left join
+                    tjut_reservation.participant p
+                on
+                    p.meeting = m.id
+        where
+            m.date like CONCAT(#{year}, '-%', #{month}, '-%')
+        and
+            p.user = #{openid}
+        order by date DESC, startTime DESC;
     </select>
 </mapper>

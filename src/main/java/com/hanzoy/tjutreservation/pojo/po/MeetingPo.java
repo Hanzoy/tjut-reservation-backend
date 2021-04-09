@@ -10,7 +10,7 @@ public class MeetingPo {
     /**
      * 预约的会议id
      */
-    private String id;
+    private Integer id;
 
     /**
      * 会议名称

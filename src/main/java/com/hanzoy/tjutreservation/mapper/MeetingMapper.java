@@ -1,5 +1,6 @@
 package com.hanzoy.tjutreservation.mapper;
 
+import com.hanzoy.tjutreservation.pojo.dto.result.GetMyReservationsResult;
 import com.hanzoy.tjutreservation.pojo.po.MeetingPo;
 import com.hanzoy.tjutreservation.pojo.po.MeetingRoomPo;
 import org.apache.ibatis.annotations.Param;
@@ -9,21 +10,9 @@ import java.util.ArrayList;
 public interface MeetingMapper {
     /**
      * 向数据库插入会议室信息
-     * @param name 会议名称
-     * @param openid 创建者id
-     * @param roomId 会议室id
-     * @param date 日期
-     * @param startTime 会议开始时间
-     * @param endTime 会议结束时间
-     * @param content 会议内容
+     * @param meeting 带插入的会议数据
      */
-    void insertMeeting(@Param("name") String name,
-                       @Param("openid") String openid,
-                       @Param("roomId") String roomId,
-                       @Param("date") String date,
-                       @Param("startTime") String startTime,
-                       @Param("endTime") String endTime,
-                       @Param("content") String content);
+    Integer insertMeeting(MeetingPo meeting);
 
     /**
      * 通过date来搜索会议
@@ -38,4 +27,28 @@ public interface MeetingMapper {
      * @return 查询结果
      */
     MeetingRoomPo selectRoomById(@Param("id") Integer id);
+
+    /**
+     * 向数据库中插入参加会议接口
+     * @param openid 用户openid
+     * @param meeting 会议id
+     */
+    void insertParticipant(@Param("openid") String openid, @Param("meeting") Integer meeting);
+
+    /**
+     * 查询每个月的总犯规次数
+     * @param year 查询的年份
+     * @param month 查询的月份
+     * @return 返回当月的申请总量
+     */
+    Integer selectCountForYearByMonth(@Param("year") String year, @Param("month") String month, @Param("openid") String openid);
+
+    /**
+     * 查询每年每个月用户的使用样本
+     * @param year 年
+     * @param month 月
+     * @param openid 用户openid
+     * @return 查询结果
+     */
+    ArrayList<MeetingPo> selectMeetingByYearAndMonth(@Param("year") String year, @Param("month") String month, @Param("openid") String openid);
 }
