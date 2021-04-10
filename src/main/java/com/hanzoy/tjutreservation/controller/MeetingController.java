@@ -4,6 +4,7 @@ import com.hanzoy.tjutreservation.aop.API;
 import com.hanzoy.tjutreservation.pojo.dto.CommonResult;
 import com.hanzoy.tjutreservation.pojo.dto.param.GetMyReservationsParam;
 import com.hanzoy.tjutreservation.pojo.dto.param.GetReservationParam;
+import com.hanzoy.tjutreservation.pojo.dto.param.GetReservationsParam;
 import com.hanzoy.tjutreservation.pojo.dto.param.PostReservationParam;
 import com.hanzoy.tjutreservation.service.MeetingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,5 +35,11 @@ public class MeetingController {
     @API(value = "getReservation", remark = "通过会议id查看会议预约信息")
     public CommonResult getReservation(@Validated @RequestBody GetReservationParam param) {
         return meetingService.getReservation(param);
+    }
+
+    @PostMapping("/getReservations")
+    @API(value = "getReservations", remark = "获取指定月份的会议室预定列表信息")
+    public CommonResult getReservations(@Validated @RequestBody GetReservationsParam param){
+        return meetingService.getReservations(param);
     }
 }

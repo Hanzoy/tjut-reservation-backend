@@ -5,12 +5,13 @@ import com.hanzoy.tjutreservation.pojo.bo.UserTokenInfo;
 import com.hanzoy.tjutreservation.pojo.dto.CommonResult;
 import com.hanzoy.tjutreservation.pojo.dto.param.GetMyReservationsParam;
 import com.hanzoy.tjutreservation.pojo.dto.param.GetReservationParam;
+import com.hanzoy.tjutreservation.pojo.dto.param.GetReservationsParam;
 import com.hanzoy.tjutreservation.pojo.dto.param.PostReservationParam;
 import com.hanzoy.tjutreservation.pojo.dto.result.GetMyReservationsResult;
 import com.hanzoy.tjutreservation.pojo.dto.result.GetReservationResult;
+import com.hanzoy.tjutreservation.pojo.dto.result.GetReservationsResult;
 import com.hanzoy.tjutreservation.pojo.dto.resultEnum.ResultEnum;
-import com.hanzoy.tjutreservation.pojo.po.MeetingPo;
-import com.hanzoy.tjutreservation.pojo.po.MeetingRoomPo;
+import com.hanzoy.tjutreservation.pojo.po.*;
 import com.hanzoy.tjutreservation.service.MeetingService;
 import com.hanzoy.tjutreservation.service.UserService;
 import com.hanzoy.utils.ClassCopyUtils.ClassCopyUtils;
@@ -175,6 +176,75 @@ public class MeetingServiceImpl implements MeetingService {
         }
         result.setParticipant(users);
 
+        return CommonResult.success(result);
+    }
+
+    @Override
+    public CommonResult getReservations(GetReservationsParam param) {
+        //aop实现token校验
+
+        //创建返回体实体对象
+        GetReservationsResult result = new GetReservationsResult();
+        //查询数据库中所有的会议室数据
+        ArrayList<GetReservationsResult.MeetingRoom> meetingRoom = meetingMapper.selectAllMeetingRoom();
+        //将查询的数据写入result中
+        result.setMeetingRoom(meetingRoom);
+        //数据库查找日历统计信息
+        ArrayList<DayPo> dayPos = meetingMapper.selectRiLiByYearAndMonth(param.getYear(), param.getMonth());
+        //声明日历数组
+        ArrayList<GetReservationsResult.Day> day = new ArrayList<>();
+        for (DayPo dayPo : dayPos) {
+            GetReservationsResult.Day theDay = new GetReservationsResult.Day();
+            //设置属性
+            theDay.setDayOfMonth(new Integer(dayPo.getDayOfMonth().split("-", 3)[2]));
+            theDay.setCount(dayPo.getCount());
+
+            //查询当前时间下所有会议室情况
+            ArrayList<MeetingRoomInfo> meetingRoomInfos = meetingMapper.selectAllRoomInfoByDate(dayPo.getDayOfMonth());
+            //声明会议室数组
+            ArrayList<GetReservationsResult.Day.MeetingRoomInfo> meetingRoomInfoArrayList = new ArrayList<>();
+            for (MeetingRoomInfo meetingRoomInfo : meetingRoomInfos) {
+                GetReservationsResult.Day.MeetingRoomInfo theMeetingRoomInfo = new GetReservationsResult.Day.MeetingRoomInfo();
+                //设置属性
+                theMeetingRoomInfo.setRoomid(meetingRoomInfo.getRoomid());
+                theMeetingRoomInfo.setCount(meetingRoomInfo.getCount());
+
+                //查询当前时间，当前会议室下的bar
+                ArrayList<BarPo> barPos = meetingMapper.selectBarByDateAndRoomId(dayPo.getDayOfMonth(), meetingRoomInfo.getRoomid());
+                ArrayList<GetReservationsResult.Day.MeetingRoomInfo.Bar> barArrayList = new ArrayList<>();
+
+                for (BarPo barPo : barPos) {
+                    GetReservationsResult.Day.MeetingRoomInfo.Bar bar = new GetReservationsResult.Day.MeetingRoomInfo.Bar();
+                    bar.setStart((stringTimeToMinute(barPo.getStartTime())-stringTimeToMinute("08:00"))/(60.0*15));
+                    bar.setEnd((stringTimeToMinute(barPo.getEndTime())-stringTimeToMinute("08:00"))/(60.0*15));
+                    barArrayList.add(bar);
+                }
+                //将bar写入结果中
+                theMeetingRoomInfo.setBar(barArrayList);
+
+                //查询当前时间，当前会议室下的meetingInfo
+                ArrayList<MeetingInfoPo> meetingPos = meetingMapper.selectMeetingInfo(dayPo.getDayOfMonth(), meetingRoomInfo.getRoomid());
+                ArrayList<GetReservationsResult.Day.MeetingRoomInfo.MeetingInfo> meetingInfo = new ArrayList<>();
+
+                for (MeetingInfoPo meetingPo : meetingPos) {
+                    GetReservationsResult.Day.MeetingRoomInfo.MeetingInfo anoMeeting = new GetReservationsResult.Day.MeetingRoomInfo.MeetingInfo();
+                    ClassCopyUtils.ClassCopy(anoMeeting, meetingPo);
+                    meetingInfo.add(anoMeeting);
+                }
+                //将info写入结果中
+                theMeetingRoomInfo.setMeetingInfo(meetingInfo);
+
+                //将单个结果放入集合中
+                meetingRoomInfoArrayList.add(theMeetingRoomInfo);
+            }
+            //将集合放入theDay中
+            theDay.setMeetingRoomInfo(meetingRoomInfoArrayList);
+
+            //将单个结果放入集合中
+            day.add(theDay);
+        }
+        //将数据结果集放入result中
+        result.setDay(day);
         return CommonResult.success(result);
     }
 

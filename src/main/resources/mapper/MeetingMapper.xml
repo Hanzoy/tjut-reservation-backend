@@ -102,4 +102,57 @@
         where
               p.meeting = #{id};
     </select>
+
+    <select id="selectAllMeetingRoom" resultType="com.hanzoy.tjutreservation.pojo.dto.result.GetReservationsResult$MeetingRoom">
+        select
+               id AS roomid, name, date, time, remark
+        from
+             tjut_reservation.meeting_room;
+    </select>
+
+    <select id="selectRiLiByYearAndMonth" resultType="com.hanzoy.tjutreservation.pojo.po.DayPo">
+        select
+               COUNT(id) AS count, date AS dayOfMonth
+        from
+             tjut_reservation.meeting
+        where
+              date like CONCAT(#{year}, '-%', #{month}, '-%') group by date;
+    </select>
+
+    <select id="selectAllRoomInfoByDate" resultType="com.hanzoy.tjutreservation.pojo.po.MeetingRoomInfo">
+        select
+               mr.id AS roomid, count(m.name) AS count
+        from
+             tjut_reservation.meeting_room mr
+                 left join
+                 tjut_reservation.meeting m
+                     on mr.id = m.room_id
+        where
+              m.date = #{date}
+        group by mr.id order by mr.id ;
+    </select>
+
+    <select id="selectBarByDateAndRoomId" resultType="com.hanzoy.tjutreservation.pojo.po.BarPo">
+        select
+               start_time AS startTime, end_time AS endTime
+        from
+             tjut_reservation.meeting
+        where
+              date = #{date}
+          and
+              room_id = #{roomid}
+        order by startTime ;
+    </select>
+
+    <select id="selectMeetingInfo" resultType="com.hanzoy.tjutreservation.pojo.po.MeetingInfoPo">
+        select
+               id, m.name, u.name AS creator, m.date, CONCAT(start_time, '-', end_time) AS time
+        from
+             tjut_reservation.meeting m
+                 left join tjut_reservation.users u on u.openid = m.creator
+        where
+              date = #{date}
+        and
+              room_id = #{roomid};
+    </select>
 </mapper>

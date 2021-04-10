@@ -2,10 +2,11 @@ package com.hanzoy.tjutreservation.mapper;
 
 import com.hanzoy.tjutreservation.pojo.dto.result.GetMyReservationsResult;
 import com.hanzoy.tjutreservation.pojo.dto.result.GetReservationResult;
-import com.hanzoy.tjutreservation.pojo.po.MeetingPo;
-import com.hanzoy.tjutreservation.pojo.po.MeetingRoomPo;
+import com.hanzoy.tjutreservation.pojo.dto.result.GetReservationsResult;
+import com.hanzoy.tjutreservation.pojo.po.*;
 import org.apache.ibatis.annotations.Param;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public interface MeetingMapper {
@@ -69,5 +70,47 @@ public interface MeetingMapper {
      */
     Integer selectIsCreator(@Param("id") String meetingId, @Param("openid") String openid);
 
+    /**
+     * 搜索某一会议的参加者人数修改
+     * @param meetingId 会议id
+     * @return 用户结果集
+     */
     ArrayList<GetReservationResult.User> selectParticipantList(@Param("id") String meetingId);
+
+    /**
+     * 查询所有会议室集合
+     * @return 查询结果
+     */
+    ArrayList<GetReservationsResult.MeetingRoom> selectAllMeetingRoom();
+
+    /**
+     * 通过year和month查看某一月的日历情况
+     * @param year 年
+     * @param month 月
+     * @return 返回结果
+     */
+    ArrayList<DayPo> selectRiLiByYearAndMonth(@Param("year") String year, @Param("month") String month);
+
+    /**
+     * 通过日期查找当前所有房间的信息
+     * @param date 日期
+     * @return 查询结果
+     */
+    ArrayList<MeetingRoomInfo> selectAllRoomInfoByDate(@Param("date") String date);
+
+    /**
+     * 通过日期和会议室id查找时间轴
+     * @param date 日期
+     * @param roomid 会议室id
+     * @return 查询结果
+     */
+    ArrayList<BarPo> selectBarByDateAndRoomId(@Param("date") String date, @Param("roomid") Integer roomid);
+
+    /**
+     * 查询当前时间，会议室下的meetingInfo
+     * @param date 日期
+     * @param roomid 会议室id
+     * @return 查询结果
+     */
+    ArrayList<MeetingInfoPo> selectMeetingInfo(@Param("date") String date, @Param("roomid") Integer roomid);
 }
