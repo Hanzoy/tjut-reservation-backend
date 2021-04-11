@@ -56,6 +56,7 @@ public class WebLogAspect {
         webLog.setStartTime(startTime);
         webLog.setUri(request.getRequestURI());
         webLog.setUrl(request.getRequestURL().toString());
+        log.info("===============");
         log.info("description: {}", webLog.getDescription());
         log.info("api:         {}", webLog.getApi());
         log.info("url:         {}", webLog.getUrl());

@@ -59,10 +59,14 @@ public class MeetingServiceImpl implements MeetingService {
         if (startTime >= endTime) {
             return CommonResult.fail(ResultEnum.PARAM_ERROR.getCode(), "日期冲突");
         }
+        //拦截时间处于范围外的会议申请
+        if (startTime < stringTimeToMinute("08:00") || endTime > stringTimeToMinute("23:00")){
+            return CommonResult.fail(ResultEnum.PARAM_ERROR.getCode(), "日期冲突");
+        }
         synchronized (MeetingServiceImpl.class) {
             //查询数据库中是否有与将要预定的会议时间上冲突的
             //查询当天所有会议
-            ArrayList<MeetingPo> meetings = meetingMapper.selectMeetingByDate(param.getDate());
+            ArrayList<MeetingPo> meetings = meetingMapper.selectMeetingByDate(param.getDate(), param.getRoomId());
             //遍历当天会议
             for (MeetingPo meeting : meetings) {
 
@@ -117,29 +121,7 @@ public class MeetingServiceImpl implements MeetingService {
             //时间整合
             meeting.setTime(meetingPo.getStartTime() + "-" + meetingPo.getEndTime());
             //整合状态
-            //获取当前时间
-            SimpleDateFormat sdf = new SimpleDateFormat();// 格式化时间
-            sdf.applyPattern("HH:mm");
-            Date nowDateTime = new Date();// 获取当前时间
-            Integer nowTime = stringTimeToMinute(sdf.format(nowDateTime));
-            sdf.applyPattern("yyyyMMdd");
-            Integer nowDate = new Integer(sdf.format(nowDateTime));
-
-            String[] dateSplit = meetingPo.getDate().split("-", 3);
-            Integer date = new Integer(dateSplit[0] + dateSplit[1] + dateSplit[2]);
-            if(nowDate < date){
-                meeting.setStatus("未开始");
-            }else if(nowDate > date){
-                meeting.setStatus("已结束");
-            }else {
-                if(nowTime < stringTimeToMinute(meetingPo.getStartTime()) ){//如果当前时间小于开始时间则状态为未开始
-                    meeting.setStatus("未开始");
-                }else if(nowTime > stringTimeToMinute(meetingPo.getEndTime())){//如果当前时间大于结束时间则状态为已结束
-                    meeting.setStatus("已结束");
-                }else {//否则将状态设置为进行中
-                    meeting.setStatus("进行中");
-                }
-            }
+            meeting.setStatus(getTheStatus(meetingPo.getDate(), meetingPo.getStartTime()+"-"+meetingPo.getEndTime()));
             info.add(meeting);
         }
         //将该月会议数据写入result中
@@ -150,7 +132,7 @@ public class MeetingServiceImpl implements MeetingService {
     @Override
     public CommonResult getReservation(GetReservationParam param) {
         //是否允许非本会议的人查看会议信息
-        boolean ifAnotherPeopleCanWatchIt = false;
+        boolean ifAnotherPeopleCanWatchIt = true;
 
         //aop实现token校验
 
@@ -162,7 +144,8 @@ public class MeetingServiceImpl implements MeetingService {
         result = meetingMapper.selectMeetingById(new Integer(param.getId()));
         //设置是否为创建者
         result.setIsCreator(meetingMapper.selectIsCreator(param.getId(), openid) != null);
-
+        //设置会议状态
+        result.setStatus(getTheStatus(result.getDate(), result.getTime()));
         ArrayList<GetReservationResult.User> users = meetingMapper.selectParticipantList(param.getId());
 
         boolean flag = false;//是否是会议成员
@@ -262,5 +245,42 @@ public class MeetingServiceImpl implements MeetingService {
         //已拦截转换异常
         return new Integer(timeSplit[0]) * 60 + new Integer(timeSplit[1]);
 
+    }
+
+    /**
+     * 通过当前时间判断状态
+     * @param date 日期 yyyy-MM-dd
+     * @param time 时间 HH:mm-HH:mm
+     * @return "未开始" | "进行中" | "已结束"
+     */
+    private String getTheStatus(String date, String time){
+        //整合状态
+        //获取当前时间
+        SimpleDateFormat sdf = new SimpleDateFormat();// 格式化时间
+        sdf.applyPattern("HH:mm");
+        Date nowDateTime = new Date();// 获取当前时间
+        Integer nowTime = stringTimeToMinute(sdf.format(nowDateTime));
+        sdf.applyPattern("yyyyMMdd");
+        Integer nowDate = new Integer(sdf.format(nowDateTime));
+        //时间切片
+        String[] timeSplit = time.split("-", 2);
+        String startTime = timeSplit[0];
+        String endTime = timeSplit[1];
+        //日期切片
+        String[] dateSplit = date.split("-", 3);
+        Integer dateInt = new Integer(dateSplit[0] + dateSplit[1] + dateSplit[2]);
+        if(nowDate < dateInt){
+            return  "未开始";
+        }else if(nowDate > dateInt){
+            return  "已结束";
+        }else {
+            if(nowTime < stringTimeToMinute(startTime) ){//如果当前时间小于开始时间则状态为未开始
+                return "未开始";
+            }else if(nowTime > stringTimeToMinute(endTime)){//如果当前时间大于结束时间则状态为已结束
+                return  "已结束";
+            }else {//否则将状态设置为进行中
+                return  "进行中";
+            }
+        }
     }
 }

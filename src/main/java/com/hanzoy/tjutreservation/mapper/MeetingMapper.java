@@ -19,9 +19,10 @@ public interface MeetingMapper {
     /**
      * 通过date来搜索会议
      * @param date 需要搜索的日期
+     * @param roomid 会议室id
      * @return 查询的结果
      */
-    ArrayList<MeetingPo> selectMeetingByDate(@Param("date") String date);
+    ArrayList<MeetingPo> selectMeetingByDate(@Param("date") String date, @Param("roomid") String roomid);
 
     /**
      * 通过会议室id查询对应的会议室

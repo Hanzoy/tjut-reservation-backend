@@ -3,17 +3,20 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/tjut_reservation?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+#    url: jdbc:mysql://127.0.0.1:3306/tjut_reservation?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    url: jdbc:mysql://192.168.115.89:3306/tjut_reservation?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
     username: root
     password: 123456
     driver-class-name: com.mysql.jdbc.Driver
+  banner:
+    location: banner.txt
 
 mybatis:
   mapper-locations: classpath:/mapper/*.xml
 
 wechat:
-  appid: wx1e6fdf0c98dc8a82
-  secret: 125930810d426c18dc8706ab8c10166b
+  appid: wx86058a38c5024b53
+  secret: 6f2c4ae96115147c2df218364d00f2cd
 
 token:
   time: 60*60*24*7
