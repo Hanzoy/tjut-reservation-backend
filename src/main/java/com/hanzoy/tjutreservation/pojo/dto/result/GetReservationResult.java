@@ -52,6 +52,10 @@ public class GetReservationResult {
     private String content;
 
     /**
+     * 会议状态
+     */
+    private String status;
+    /**
      * 参会人员
      */
     private ArrayList<User> participant;

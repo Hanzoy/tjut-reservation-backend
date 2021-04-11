@@ -13,7 +13,9 @@
         from
              tjut_reservation.meeting
         where
-              date = #{date};
+              date = #{date}
+        and
+              room_id = #{roomid};
     </select>
 
     <select id="selectRoomById" resultType="com.hanzoy.tjutreservation.pojo.po.MeetingRoomPo">
@@ -153,6 +155,7 @@
         where
               date = #{date}
         and
-              room_id = #{roomid};
+              room_id = #{roomid}
+        order by start_time;
     </select>
 </mapper>
