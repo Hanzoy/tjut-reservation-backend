@@ -1,5 +1,6 @@
 package com.hanzoy.tjutreservation.exception;
 
+import com.hanzoy.tjutreservation.exception.myExceptions.TimeErrorException;
 import com.hanzoy.tjutreservation.pojo.dto.CommonResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -46,5 +47,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NumberFormatException.class)
     public CommonResult numberFormatException(NumberFormatException e){
         return CommonResult.serverError("数字解析异常");
+    }
+
+    @ExceptionHandler(TimeErrorException.class)
+    public CommonResult timeErrorException(TimeErrorException e){
+        return CommonResult.paramError("时间冲突");
     }
 }

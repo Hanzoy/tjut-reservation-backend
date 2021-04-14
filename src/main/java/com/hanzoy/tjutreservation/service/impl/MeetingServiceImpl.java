@@ -1,6 +1,8 @@
 package com.hanzoy.tjutreservation.service.impl;
 
+import com.hanzoy.tjutreservation.exception.myExceptions.TimeErrorException;
 import com.hanzoy.tjutreservation.mapper.MeetingMapper;
+import com.hanzoy.tjutreservation.mapper.UserMapper;
 import com.hanzoy.tjutreservation.pojo.bo.UserTokenInfo;
 import com.hanzoy.tjutreservation.pojo.dto.CommonResult;
 import com.hanzoy.tjutreservation.pojo.dto.param.GetMyReservationsParam;
@@ -20,9 +22,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 
 @Service
@@ -35,6 +40,8 @@ public class MeetingServiceImpl implements MeetingService {
     MeetingMapper meetingMapper;
 
     //未来还将完成耿老师的需求 todo
+    @Resource
+    UserMapper userMapper;
 
     @Override
     public CommonResult postReservation(PostReservationParam param) {
@@ -42,6 +49,12 @@ public class MeetingServiceImpl implements MeetingService {
 
         //获取token中内容
         UserTokenInfo tokenInfo = userService.getUserTokenInfo(param.getToken());
+
+        //查询是否有权限创建会议室
+        UserPo user = userMapper.selectUserByOpenid(tokenInfo.getOpenid());
+        if(user == null || !user.getCreatAuth()){
+            return CommonResult.authError("您没有创建会议室的权利");
+        }
 
         //查询房间id是否存在
         MeetingRoomPo meetingRoomPo = meetingMapper.selectRoomById(new Integer(param.getRoomId()));
@@ -51,19 +64,14 @@ public class MeetingServiceImpl implements MeetingService {
             return CommonResult.paramError("会议室id异常");
         }
 
-        //计算相对00：00时间分钟数的差
-        Integer startTime = stringTimeToMinute(param.getStartTime());
-        Integer endTime = stringTimeToMinute(param.getEndTime());
+        //日期拦截
+        interceptDate(param.getDate(), param.getStartTime(), param.getEndTime());
 
-        //如果开始时间小于等于结束时间，返回日期冲突
-        if (startTime >= endTime) {
-            return CommonResult.fail(ResultEnum.PARAM_ERROR.getCode(), "日期冲突");
-        }
-        //拦截时间处于范围外的会议申请
-        if (startTime < stringTimeToMinute("08:00") || endTime > stringTimeToMinute("23:00")){
-            return CommonResult.fail(ResultEnum.PARAM_ERROR.getCode(), "日期冲突");
-        }
         synchronized (MeetingServiceImpl.class) {
+            //计算相对00：00时间分钟数的差
+            Integer startTime = stringTimeToMinute(param.getStartTime());
+            Integer endTime = stringTimeToMinute(param.getEndTime());
+
             //查询数据库中是否有与将要预定的会议时间上冲突的
             //查询当天所有会议
             ArrayList<MeetingPo> meetings = meetingMapper.selectMeetingByDate(param.getDate(), param.getRoomId());
@@ -74,7 +82,7 @@ public class MeetingServiceImpl implements MeetingService {
                 Integer anoStartTime = stringTimeToMinute(meeting.getStartTime());
                 Integer anoEndTime = stringTimeToMinute(meeting.getEndTime());
 
-                //检验日期是否冲突，如果开始时间大于其他会议结束时间则一定不冲突
+                //检验日期是否冲突，如果开始时间大于会议结束时间则一定不冲突
                 if (!(startTime >= anoEndTime || anoStartTime >= endTime)) {
                     return CommonResult.fail(ResultEnum.PARAM_ERROR.getCode(), "日期冲突");
                 }
@@ -85,7 +93,7 @@ public class MeetingServiceImpl implements MeetingService {
             meetingPo.setCreator(tokenInfo.getOpenid());
             //保存数据至数据库
 
-            Integer integer = meetingMapper.insertMeeting(meetingPo);
+            meetingMapper.insertMeeting(meetingPo);
             meetingMapper.insertParticipant(tokenInfo.getOpenid(), meetingPo.getId());
         }
         //正常返回结果
@@ -281,6 +289,53 @@ public class MeetingServiceImpl implements MeetingService {
             }else {//否则将状态设置为进行中
                 return  "进行中";
             }
+        }
+    }
+
+    /**
+     * 拦截用户传入的参数的日期
+     * @param date 日期
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     */
+    private void interceptDate(String date, String startTime, String endTime){
+
+        //如果开始时间小于等于结束时间，返回日期冲突
+        if (stringTimeToMinute(startTime) >= stringTimeToMinute(endTime)) {
+            throw new TimeErrorException();
+        }
+
+        //拦截时间处于范围外的会议申请
+        if (stringTimeToMinute(startTime) < stringTimeToMinute("08:00") || stringTimeToMinute(endTime) > stringTimeToMinute("23:00")){
+            throw new TimeErrorException();
+        }
+
+        //拦截大于一周以后的会议室申请
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");// 格式化时间
+        sdf.applyPattern("yyyy-MM-dd");
+        Date dateValue = null;
+        try {
+            dateValue = sdf.parse(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        Date today = new Date();
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(today);
+        calendar.add(Calendar.DATE,7); //把日期往后增加一天,整数  往后推,负数往前移动
+        Date limitDate=calendar.getTime(); //这个时间就是日期往后推一天的结果
+        assert dateValue != null;
+        if(dateValue.after(limitDate)){
+            throw new TimeErrorException();
+        }
+
+        //拦截在今天以前的申请
+        String[] dateSplit = date.split("-", 3);
+        Integer dateInt = new Integer(dateSplit[0] + dateSplit[1] + dateSplit[2]);
+        sdf.applyPattern("yyyyMMdd");
+        Integer todayValue = new Integer(sdf.format(today));
+        if(dateInt < todayValue){
+            throw new TimeErrorException();
         }
     }
 }

@@ -24,7 +24,7 @@ public class CheckToken {
     public void meetingServer(){}
 
     @Around("meetingServer()")
-    public CommonResult checkToken(ProceedingJoinPoint joinPoint){
+    public CommonResult checkToken(ProceedingJoinPoint joinPoint) throws Throwable {
         //声明token字段
         Field tokenField = null;
         //声明token内容
@@ -53,11 +53,6 @@ public class CheckToken {
             }
         }
         //如果没有token字段或者通过token检验则执行业务方法
-        try {
-            return (CommonResult) joinPoint.proceed();
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-        }
-        return null;
+        return (CommonResult) joinPoint.proceed();
     }
 }
