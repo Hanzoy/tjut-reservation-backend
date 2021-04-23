@@ -55,6 +55,12 @@ public class GetReservationResult {
      * 会议状态
      */
     private String status;
+
+    /**
+     * 是否开启会议提醒
+     */
+    private Boolean remind;
+
     /**
      * 参会人员
      */

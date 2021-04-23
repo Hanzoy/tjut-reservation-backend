@@ -3,6 +3,7 @@ package com.hanzoy.tjutreservation.pojo.dto.param;
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 /**
@@ -54,4 +55,10 @@ public class PostReservationParam {
      */
     @NotEmpty(message = "不能为空")
     private String content;
+
+    /**
+     * 是否提醒
+     */
+    @NotNull(message = "不能为空")
+    private Boolean remind;
 }

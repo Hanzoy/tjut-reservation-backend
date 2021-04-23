@@ -29,9 +29,9 @@ public interface MeetingService {
     CommonResult getReservation(GetReservationParam param);
 
     /**
-     *
-     * @param param
-     * @return
+     * 获取所有会议预约信息
+     * @param param 参数
+     * @return 返回对象
      */
     CommonResult getReservations(GetReservationsParam param);
 }

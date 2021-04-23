@@ -94,7 +94,7 @@ public class MeetingServiceImpl implements MeetingService {
             //保存数据至数据库
 
             meetingMapper.insertMeeting(meetingPo);
-            meetingMapper.insertParticipant(tokenInfo.getOpenid(), meetingPo.getId());
+            meetingMapper.insertParticipant(tokenInfo.getOpenid(), meetingPo.getId(), param.getRemind());
         }
         //正常返回结果
         return CommonResult.success(null);
@@ -154,6 +154,8 @@ public class MeetingServiceImpl implements MeetingService {
         result.setIsCreator(meetingMapper.selectIsCreator(param.getId(), openid) != null);
         //设置会议状态
         result.setStatus(getTheStatus(result.getDate(), result.getTime()));
+        //设置会议是否需要提醒
+        result.setRemind(meetingMapper.isRemind(openid, param.getId()));
         ArrayList<GetReservationResult.User> users = meetingMapper.selectParticipantList(param.getId());
 
         boolean flag = false;//是否是会议成员

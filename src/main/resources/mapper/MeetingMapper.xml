@@ -28,7 +28,7 @@
     </select>
 
     <insert id="insertParticipant" useGeneratedKeys="true" keyColumn="id">
-        insert into tjut_reservation.participant(user, meeting) VALUES (#{openid}, #{meeting})
+        insert into tjut_reservation.participant(user, meeting, remind) VALUES (#{openid}, #{meeting}, #{remind})
     </insert>
 
     <select id="selectCountForYearByMonth" resultType="int">
@@ -157,5 +157,16 @@
         and
               room_id = #{roomid}
         order by start_time;
+    </select>
+
+    <select id="isRemind" resultType="boolean">
+        select
+               remind
+        from
+             tjut_reservation.participant
+        where
+              user = #{openid}
+          and
+              meeting = #{meetingId};
     </select>
 </mapper>

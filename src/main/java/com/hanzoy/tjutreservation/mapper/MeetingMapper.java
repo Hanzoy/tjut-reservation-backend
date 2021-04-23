@@ -36,7 +36,7 @@ public interface MeetingMapper {
      * @param openid 用户openid
      * @param meeting 会议id
      */
-    void insertParticipant(@Param("openid") String openid, @Param("meeting") Integer meeting);
+    void insertParticipant(@Param("openid") String openid, @Param("meeting") Integer meeting, @Param("remind") Boolean remind);
 
     /**
      * 查询每个月的总犯规次数
@@ -114,4 +114,12 @@ public interface MeetingMapper {
      * @return 查询结果
      */
     ArrayList<MeetingInfoPo> selectMeetingInfo(@Param("date") String date, @Param("roomid") Integer roomid);
+
+    /**
+     * 查询是否需要提醒
+     * @param openid 用户openid
+     * @param meetingId 会议id
+     * @return 查询结果
+     */
+    Boolean isRemind(@Param("openid") String openid, @Param("meetingId") String meetingId);
 }
