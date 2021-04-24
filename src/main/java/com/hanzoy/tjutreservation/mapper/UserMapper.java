@@ -50,4 +50,11 @@ public interface UserMapper {
                     @Param("nickName") String nickName,
                     @Param("avatarUrl") String avatarUrl,
                     @Param("creatAuth") Boolean creatAuth);
+
+    /**
+     * 查询是否为管理员
+     * @param openid 待查询用户openid
+     * @return 返回结果是否为null
+     */
+    Integer selectIsAdmin(@Param("openid") String openid);
 }

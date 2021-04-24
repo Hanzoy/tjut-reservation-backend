@@ -5,10 +5,7 @@ import com.hanzoy.tjutreservation.mapper.MeetingMapper;
 import com.hanzoy.tjutreservation.mapper.UserMapper;
 import com.hanzoy.tjutreservation.pojo.bo.UserTokenInfo;
 import com.hanzoy.tjutreservation.pojo.dto.CommonResult;
-import com.hanzoy.tjutreservation.pojo.dto.param.GetMyReservationsParam;
-import com.hanzoy.tjutreservation.pojo.dto.param.GetReservationParam;
-import com.hanzoy.tjutreservation.pojo.dto.param.GetReservationsParam;
-import com.hanzoy.tjutreservation.pojo.dto.param.PostReservationParam;
+import com.hanzoy.tjutreservation.pojo.dto.param.*;
 import com.hanzoy.tjutreservation.pojo.dto.result.GetMyReservationsResult;
 import com.hanzoy.tjutreservation.pojo.dto.result.GetReservationResult;
 import com.hanzoy.tjutreservation.pojo.dto.result.GetReservationsResult;
@@ -16,7 +13,12 @@ import com.hanzoy.tjutreservation.pojo.dto.resultEnum.ResultEnum;
 import com.hanzoy.tjutreservation.pojo.po.*;
 import com.hanzoy.tjutreservation.service.MeetingService;
 import com.hanzoy.tjutreservation.service.UserService;
+import com.hanzoy.tjutreservation.utils.WechatUtils.WechatUtils;
+import com.hanzoy.tjutreservation.utils.WechatUtils.dto.Param;
+import com.hanzoy.tjutreservation.utils.WechatUtils.dto.SendNoticeResult;
+import com.hanzoy.tjutreservation.utils.WechatUtils.dto.WechatTemplateEnum;
 import com.hanzoy.utils.ClassCopyUtils.ClassCopyUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-
+@Slf4j
 @Service
 @Transactional
 public class MeetingServiceImpl implements MeetingService {
@@ -42,6 +44,9 @@ public class MeetingServiceImpl implements MeetingService {
     //未来还将完成耿老师的需求 todo
     @Resource
     UserMapper userMapper;
+
+    @Autowired
+    WechatUtils wechatUtils;
 
     @Override
     public CommonResult postReservation(PostReservationParam param) {
@@ -239,6 +244,55 @@ public class MeetingServiceImpl implements MeetingService {
         //将数据结果集放入result中
         result.setDay(day);
         return CommonResult.success(result);
+    }
+
+    @Override
+    public CommonResult deleteReservation(DeleteReservationParam param) {
+        //aop实现token校验
+
+        //获取openid
+        String openid = userService.getUserTokenInfo(param.getToken()).getOpenid();
+
+        //查询当前用户是否有删除该会议的权限
+        if ((meetingMapper.selectIsCreator(param.getId(), openid)==null) && (userMapper.selectIsAdmin(openid) == null)) {
+            //当当前用户既不是该会议的创建者也不是管理员时，拒绝该删除请求
+            return CommonResult.authError("权限不足，无法删除会议");
+        }
+        //获取会议详情
+        GetReservationResult meetingInfo = meetingMapper.selectMeetingById(new Integer(param.getId()));
+
+        //获取所有需要提醒的用户openid
+        ArrayList<String> openidList = meetingMapper.selectParticipantUserByMeetingAndNeedRemind(param.getId());
+        for (String theOpenid : openidList) {
+            //发送通知
+            SendNoticeResult result = wechatUtils.sendNotice(
+                    theOpenid,
+                    WechatTemplateEnum.CANCEL_MEETING.id,
+                    new Param(
+                            "thing1", meetingInfo.getName(),
+                            "thing3", meetingInfo.getMeetingName(),
+                            "date2", meetingInfo.getDate() + " " + meetingInfo.getTime().split("-", 2)[0],
+                            "thing4", param.getRemark()
+                    ),
+                    null,
+                    null,
+                    null
+            );
+            if(!result.getErrcode().equals("0")){
+                log.warn("==用户提醒发送失败==");
+                log.warn("openid:      {}",theOpenid);
+                log.warn("meeting:     {}",meetingInfo.getName());
+                log.warn("meetingName: {}",meetingInfo.getMeetingName());
+                log.warn("time         {}",meetingInfo.getDate()+" "+meetingInfo.getTime());
+                log.warn("remark       {}",param.getRemark());
+                log.warn("=================");
+            }
+        }
+
+        //满足条件，执行删除任务
+        meetingMapper.deleteMeeting(param.getId());
+
+        return CommonResult.success(null);
     }
 
     /**

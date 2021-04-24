@@ -1,12 +1,10 @@
 package com.hanzoy.tjutreservation.mapper;
 
-import com.hanzoy.tjutreservation.pojo.dto.result.GetMyReservationsResult;
 import com.hanzoy.tjutreservation.pojo.dto.result.GetReservationResult;
 import com.hanzoy.tjutreservation.pojo.dto.result.GetReservationsResult;
 import com.hanzoy.tjutreservation.pojo.po.*;
 import org.apache.ibatis.annotations.Param;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public interface MeetingMapper {
@@ -14,7 +12,7 @@ public interface MeetingMapper {
      * 向数据库插入会议信息
      * @param meeting 带插入的会议数据
      */
-    Integer insertMeeting(MeetingPo meeting);
+    void insertMeeting(MeetingPo meeting);
 
     /**
      * 通过date来搜索会议
@@ -122,4 +120,17 @@ public interface MeetingMapper {
      * @return 查询结果
      */
     Boolean isRemind(@Param("openid") String openid, @Param("meetingId") String meetingId);
+
+    /**
+     * 通过会议id删除会议
+     * @param meetingId 会议的id
+     */
+    void deleteMeeting(@Param("meetingId") String meetingId);
+
+    /**
+     * 通过会议ID查询需要通知的用户
+     * @param meetingId 会议id
+     * @return 用户openid
+     */
+    ArrayList<String> selectParticipantUserByMeetingAndNeedRemind(@Param("meetingId") String meetingId);
 }

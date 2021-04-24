@@ -169,4 +169,23 @@
           and
               meeting = #{meetingId};
     </select>
+
+    <delete id="deleteMeeting">
+        delete from
+                    tjut_reservation.meeting
+        where
+              id = #{meetingId}
+    </delete>
+
+    <select id="selectParticipantUserByMeetingAndNeedRemind" resultType="string">
+        select
+               user
+        from
+             tjut_reservation.participant
+        where
+              meeting = #{meetingId}
+          and
+              remind = 1
+    </select>
+
 </mapper>

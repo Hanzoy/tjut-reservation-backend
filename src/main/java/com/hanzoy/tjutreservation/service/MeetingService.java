@@ -1,10 +1,7 @@
 package com.hanzoy.tjutreservation.service;
 
 import com.hanzoy.tjutreservation.pojo.dto.CommonResult;
-import com.hanzoy.tjutreservation.pojo.dto.param.GetMyReservationsParam;
-import com.hanzoy.tjutreservation.pojo.dto.param.GetReservationParam;
-import com.hanzoy.tjutreservation.pojo.dto.param.GetReservationsParam;
-import com.hanzoy.tjutreservation.pojo.dto.param.PostReservationParam;
+import com.hanzoy.tjutreservation.pojo.dto.param.*;
 
 public interface MeetingService {
     /**
@@ -34,4 +31,11 @@ public interface MeetingService {
      * @return 返回对象
      */
     CommonResult getReservations(GetReservationsParam param);
+
+    /**
+     * 删除会议
+     * @param param 参数
+     * @return 返回对象
+     */
+    CommonResult deleteReservation(DeleteReservationParam param);
 }

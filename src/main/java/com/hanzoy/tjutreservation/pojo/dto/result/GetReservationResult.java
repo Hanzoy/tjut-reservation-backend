@@ -2,8 +2,6 @@ package com.hanzoy.tjutreservation.pojo.dto.result;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Pattern;
 import java.util.ArrayList;
 
 /**

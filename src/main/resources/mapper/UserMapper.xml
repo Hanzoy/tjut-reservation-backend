@@ -37,4 +37,13 @@
             tjut_reservation.users(openid, name, nick_name, avatar_url, creat_auth)
             VALUES (#{openid}, #{name}, #{nickName}, #{avatarUrl}, #{creatAuth});
     </insert>
+
+    <select id="selectIsAdmin" resultType="integer">
+        select
+               id
+        from
+             tjut_reservation.admin
+        where
+              user = #{openid}
+    </select>
 </mapper>
