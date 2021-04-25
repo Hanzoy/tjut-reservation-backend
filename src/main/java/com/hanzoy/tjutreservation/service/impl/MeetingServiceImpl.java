@@ -12,12 +12,14 @@ import com.hanzoy.tjutreservation.pojo.dto.result.GetReservationsResult;
 import com.hanzoy.tjutreservation.pojo.dto.resultEnum.ResultEnum;
 import com.hanzoy.tjutreservation.pojo.po.*;
 import com.hanzoy.tjutreservation.service.MeetingService;
+import com.hanzoy.tjutreservation.service.SchedulerService;
 import com.hanzoy.tjutreservation.service.UserService;
 import com.hanzoy.tjutreservation.utils.WechatUtils.WechatUtils;
 import com.hanzoy.tjutreservation.utils.WechatUtils.dto.Param;
 import com.hanzoy.tjutreservation.utils.WechatUtils.dto.SendNoticeResult;
 import com.hanzoy.tjutreservation.utils.WechatUtils.dto.WechatTemplateEnum;
 import com.hanzoy.utils.ClassCopyUtils.ClassCopyUtils;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,7 +50,11 @@ public class MeetingServiceImpl implements MeetingService {
     @Autowired
     WechatUtils wechatUtils;
 
+    @Autowired
+    SchedulerService schedulerService;
+
     @Override
+    @SneakyThrows
     public CommonResult postReservation(PostReservationParam param) {
         //AOP实现token校验
 
@@ -100,6 +106,14 @@ public class MeetingServiceImpl implements MeetingService {
 
             meetingMapper.insertMeeting(meetingPo);
             meetingMapper.insertParticipant(tokenInfo.getOpenid(), meetingPo.getId(), param.getRemind());
+
+            //转换开始的时间
+            SimpleDateFormat sdf = new SimpleDateFormat();
+            sdf.applyPattern("yyyy-MM-dd HH:mm");
+            Date startDate = sdf.parse(param.getDate() + " " + param.getStartTime());
+
+            //开启会议提醒
+            schedulerService.starSendRemindTask(String.valueOf(meetingPo.getId()), startDate);
         }
         //正常返回结果
         return CommonResult.success(null);

@@ -70,6 +70,15 @@
             <artifactId>aspectjweaver</artifactId>
         </dependency>
 
+        <!-- quartz 定时任务 -->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-quartz</artifactId>-->
+<!--        </dependency>-->
+        <dependency>
+            <artifactId>spring-boot-starter-quartz</artifactId>
+            <groupId>org.springframework.boot</groupId>
+        </dependency>
     </dependencies>
 
     <build>
