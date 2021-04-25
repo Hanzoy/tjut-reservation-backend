@@ -3,13 +3,14 @@ package com.hanzoy.tjutreservation.pojo.dto.param;
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 /**
- * deleteReservation接口参数
+ * remindReservation接口参数
  */
 @Data
-public class DeleteReservationParam {
+public class RemindReservationParam {
     /**
      * 用户token
      */
@@ -20,10 +21,11 @@ public class DeleteReservationParam {
      * 会议id
      */
     @Pattern(regexp = "^[0-9]*$", message = "格式错误")
-    private String id;
+    private Integer id;
 
     /**
-     * 删除备注
+     * 是否开启提醒
      */
-    private String remark;
+    @NotNull(message = "不能为空")
+    private Boolean remind;
 }

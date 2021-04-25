@@ -133,4 +133,12 @@ public interface MeetingMapper {
      * @return 用户openid
      */
     ArrayList<String> selectParticipantUserByMeetingAndNeedRemind(@Param("meetingId") String meetingId);
+
+    /**
+     * 通过openid和meetingId修改是否需要提醒
+     * @param meetingId 会议id
+     * @param openid 用户openid
+     * @param remind 是否提醒
+     */
+    void updateParticipantRemindByMeetingAndOpenid(@Param("meetingId")String meetingId, @Param("openid")String openid, @Param("remind")Boolean remind);
 }

@@ -45,4 +45,10 @@ public class MeetingController {
     public CommonResult deleteReservation(@Validated @RequestBody DeleteReservationParam param){
         return meetingService.deleteReservation(param);
     }
+
+    @PostMapping("/remindReservation")
+    @API(value = "remindReservation", remark = "开启或者关闭提醒")
+    public CommonResult remindReservation(@Validated @RequestBody RemindReservationParam param){
+        return meetingService.remindReservation(param);
+    }
 }

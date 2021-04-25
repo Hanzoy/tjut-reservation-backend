@@ -38,4 +38,11 @@ public interface MeetingService {
      * @return 返回对象
      */
     CommonResult deleteReservation(DeleteReservationParam param);
+
+    /**
+     * 开启或关闭提醒
+     * @param param 参数
+     * @return 返回对象
+     */
+    CommonResult remindReservation(RemindReservationParam param);
 }

@@ -316,6 +316,19 @@ public class MeetingServiceImpl implements MeetingService {
         return CommonResult.success(null);
     }
 
+    @Override
+    public CommonResult remindReservation(RemindReservationParam param) {
+        //aop实现token校验
+
+        //获取openid
+        String openid = userService.getUserTokenInfo(param.getToken()).getOpenid();
+
+        //发送修改请求
+        meetingMapper.updateParticipantRemindByMeetingAndOpenid(String.valueOf(param.getId()), openid, param.getRemind());
+
+        return CommonResult.success(null);
+    }
+
     /**
      * 传入一个时间字符串，将其转化为与 00:00 时刻的分钟数差
      *

@@ -188,4 +188,14 @@
               remind = 1
     </select>
 
+    <update id="updateParticipantRemindByMeetingAndOpenid">
+        update
+            tjut_reservation.participant
+        set
+            remind = #{remind}
+        where
+              meeting = #{meetingId}
+          and
+              user = #{openid}
+    </update>
 </mapper>
