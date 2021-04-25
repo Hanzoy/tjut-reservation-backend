@@ -60,6 +60,10 @@ public class GetReservationResult {
     private Boolean remind;
 
     /**
+     * 当前用户是否参会
+     */
+    private Boolean isParticipant;
+    /**
      * 参会人员
      */
     private ArrayList<User> participant;

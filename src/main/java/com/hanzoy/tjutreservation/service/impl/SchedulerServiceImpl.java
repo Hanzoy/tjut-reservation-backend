@@ -15,7 +15,7 @@ import java.util.GregorianCalendar;
 public class SchedulerServiceImpl implements SchedulerService {
 
     @Autowired
-    QuartzScheduler quartzScheduler;
+    QuartzManager quartzScheduler;
 
     @Autowired
     QuartzManager quartzManager;

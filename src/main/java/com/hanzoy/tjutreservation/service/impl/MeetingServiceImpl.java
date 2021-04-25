@@ -178,20 +178,23 @@ public class MeetingServiceImpl implements MeetingService {
         //设置会议状态
         result.setStatus(getTheStatus(result.getDate(), result.getTime()));
         //设置会议是否需要提醒
-        result.setRemind(meetingMapper.isRemind(openid, param.getId()));
+        Boolean remind = meetingMapper.isRemind(openid, param.getId());
+        result.setRemind(remind != null && remind);
         ArrayList<GetReservationResult.User> users = meetingMapper.selectParticipantList(param.getId());
 
         boolean flag = false;//是否是会议成员
         for (GetReservationResult.User user : users) {
-            if(user.getId().equals(openid)){
+            if (user.getId().equals(openid)) {
                 flag = true;
+                break;
             }
         }
         if(!flag && !ifAnotherPeopleCanWatchIt){
             return CommonResult.authError();
         }
         result.setParticipant(users);
-
+        //设置用户是否是会议成员
+        result.setIsParticipant(flag);
         return CommonResult.success(result);
     }
 
