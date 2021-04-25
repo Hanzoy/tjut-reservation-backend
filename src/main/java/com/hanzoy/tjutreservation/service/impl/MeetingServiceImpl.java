@@ -155,6 +155,10 @@ public class MeetingServiceImpl implements MeetingService {
         String openid = userService.getUserTokenInfo(param.getToken()).getOpenid();
         //从数据库中获取会议信息
         result = meetingMapper.selectMeetingById(new Integer(param.getId()));
+        //判断查询结果是否为空
+        if(result == null){
+            return CommonResult.paramError("会议查询为空");
+        }
         //设置是否为创建者
         result.setIsCreator(meetingMapper.selectIsCreator(param.getId(), openid) != null);
         //设置会议状态
