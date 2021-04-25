@@ -61,9 +61,6 @@ public class WechatUtils {
                         "js_code", js_code,
                         "grant_type", "authorization_code"),
                 AuthorizationResult.class);
-
-        //其他错误返回
-//        return new AuthorizationResult(null, null, null, "-2", "http请求错误");
     }
 
     /**
@@ -94,6 +91,7 @@ public class WechatUtils {
     }
 
     public SendNoticeResult sendNotice(String touser, String template_id, Param data, String page, String miniprogram_state, String lang){
+        //修改微信脑血栓式data结构
         Map<String, Object> dataMap = data.toMap();
         Map<String, Object> _data = new HashMap<>();
         for(Map.Entry<String, Object> entry: dataMap.entrySet()){
