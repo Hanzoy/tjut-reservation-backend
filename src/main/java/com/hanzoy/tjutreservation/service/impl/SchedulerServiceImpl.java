@@ -21,7 +21,7 @@ public class SchedulerServiceImpl implements SchedulerService {
     QuartzManager quartzManager;
 
     @Override
-    public void starSendRemindTask(String meetingId, Date startTime) {
+    public void startSendRemindTask(String meetingId, Date startTime) {
         //需要提前通知的时间
         java.util.Calendar calendar = new GregorianCalendar();
         calendar.setTime(startTime);
@@ -51,5 +51,12 @@ public class SchedulerServiceImpl implements SchedulerService {
         // 调度容器设置JobDetail和Trigger
         quartzManager.addJob(jobDetail, trigger);
 //            quartzScheduler.scheduleJob(jobDetail, trigger);
+    }
+
+    @Override
+    public void modifySendRemindTask(String meetingId, Date startTime) {
+
+        quartzManager.deleteJob(meetingId);
+        startSendRemindTask(meetingId, startTime);
     }
 }

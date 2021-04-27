@@ -7,10 +7,10 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 /**
- * postReservation接口接受参数
+ * modifyReservation接口参数
  */
 @Data
-public class PostReservationParam {
+public class ModifyReservationParam {
     /**
      * 用户token
      */
@@ -24,10 +24,10 @@ public class PostReservationParam {
     private String name;
 
     /**
-     * 会议室id
+     * 会议id
      */
-    @Pattern(regexp = "^[0-9]*$", message = "必须为数字")
-    private String roomId;
+    @NotNull(message = "不能为空")
+    private Integer id;
 
     /**
      * 预定日期

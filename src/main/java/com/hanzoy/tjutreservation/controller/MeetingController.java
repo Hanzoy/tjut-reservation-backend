@@ -4,6 +4,7 @@ import com.hanzoy.tjutreservation.aop.API;
 import com.hanzoy.tjutreservation.pojo.dto.CommonResult;
 import com.hanzoy.tjutreservation.pojo.dto.param.*;
 import com.hanzoy.tjutreservation.service.MeetingService;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,5 +51,17 @@ public class MeetingController {
     @API(value = "remindReservation", remark = "开启或者关闭提醒")
     public CommonResult remindReservation(@Validated @RequestBody RemindReservationParam param){
         return meetingService.remindReservation(param);
+    }
+
+    @PostMapping("/modifyReservation")
+    @API(value = "modifyReservation", remark = "修改会议")
+    public CommonResult modifyReservation(@Validated @RequestBody ModifyReservationParam param){
+        return meetingService.modifyReservation(param);
+    }
+
+    @PostMapping("/joinReservation")
+    @API(value = "joinReservation", remark = "加入或者修改会议")
+    public CommonResult joinReservation(@Validated @RequestBody JoinReservationParam param){
+        return meetingService.joinReservation(param);
     }
 }

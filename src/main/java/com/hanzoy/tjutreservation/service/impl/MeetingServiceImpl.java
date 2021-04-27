@@ -105,7 +105,7 @@ public class MeetingServiceImpl implements MeetingService {
             //保存数据至数据库
 
             meetingMapper.insertMeeting(meetingPo);
-            meetingMapper.insertParticipant(tokenInfo.getOpenid(), meetingPo.getId(), param.getRemind());
+            meetingMapper.insertParticipant(tokenInfo.getOpenid(), meetingPo.getId(), param.getRemind() == null || param.getRemind());
 
             //转换开始的时间
             SimpleDateFormat sdf = new SimpleDateFormat();
@@ -113,7 +113,7 @@ public class MeetingServiceImpl implements MeetingService {
             Date startDate = sdf.parse(param.getDate() + " " + param.getStartTime());
 
             //开启会议提醒
-            schedulerService.starSendRemindTask(String.valueOf(meetingPo.getId()), startDate);
+            schedulerService.startSendRemindTask(String.valueOf(meetingPo.getId()), startDate);
         }
         //正常返回结果
         return CommonResult.success(null);
@@ -301,6 +301,7 @@ public class MeetingServiceImpl implements MeetingService {
             );
             if(!result.getErrcode().equals("0")){
                 log.warn("==用户提醒发送失败==");
+                log.warn("result:      {}",result);
                 log.warn("openid:      {}",theOpenid);
                 log.warn("meeting:     {}",meetingInfo.getName());
                 log.warn("meetingName: {}",meetingInfo.getMeetingName());
@@ -326,6 +327,135 @@ public class MeetingServiceImpl implements MeetingService {
         //发送修改请求
         meetingMapper.updateParticipantRemindByMeetingAndOpenid(String.valueOf(param.getId()), openid, param.getRemind());
 
+        return CommonResult.success(null);
+    }
+
+    @Override
+    @SneakyThrows
+    public CommonResult modifyReservation(ModifyReservationParam param) {
+
+        //AOP实现token校验
+
+        //获取token中内容
+        UserTokenInfo tokenInfo = userService.getUserTokenInfo(param.getToken());
+
+        //查询是否有权限修改会议室
+        if ((meetingMapper.selectIsCreator(String.valueOf(param.getId()), tokenInfo.getOpenid()) == null && userMapper.selectIsAdmin(tokenInfo.getOpenid()) == null)) {
+            return CommonResult.authError("没有权限修改密码");
+        }
+
+        //日期拦截
+        interceptDate(param.getDate(), param.getStartTime(), param.getEndTime());
+
+        synchronized (MeetingServiceImpl.class) {
+            //获取会议详情
+            GetReservationResult getReservationResult = meetingMapper.selectMeetingById(Integer.valueOf(param.getId()));
+
+            //查询会议室id
+            Integer meetingRoomId = meetingMapper.selectMeetingRoomIdByMeetingId(String.valueOf(param.getId()));
+
+            //计算相对00：00时间分钟数的差
+            Integer startTime = stringTimeToMinute(param.getStartTime());
+            Integer endTime = stringTimeToMinute(param.getEndTime());
+
+            //查询数据库中是否有与将要预定的会议时间上冲突的
+            //查询当天所有会议
+            ArrayList<MeetingPo> meetings = meetingMapper.selectMeetingByDate(param.getDate(), String.valueOf(meetingRoomId));
+            //遍历当天会议
+            for (MeetingPo meeting : meetings) {
+
+                //计算集合里会议相对00：00时间分钟数的差
+                Integer anoStartTime = stringTimeToMinute(meeting.getStartTime());
+                Integer anoEndTime = stringTimeToMinute(meeting.getEndTime());
+
+                //检验日期是否冲突，如果开始时间大于会议结束时间则一定不冲突
+                if (!(startTime >= anoEndTime || anoStartTime >= endTime)) {
+                    if(meeting.getId().equals(param.getId())){
+                        continue;
+                    }
+                    return CommonResult.fail(ResultEnum.PARAM_ERROR.getCode(), "日期冲突");
+                }
+            }
+            //整理需要插入的实体类
+            MeetingPo meetingPo = new MeetingPo();
+            ClassCopyUtils.ClassCopy(meetingPo, getReservationResult);
+            ClassCopyUtils.ClassCopy(meetingPo, param);
+            meetingPo.setRoomId(String.valueOf(meetingRoomId));
+            meetingPo.setCreator(tokenInfo.getOpenid());
+            //保存数据至数据库
+
+            meetingMapper.updateMeeting(meetingPo);
+            meetingMapper.updateParticipantRemindByMeetingAndOpenid(String.valueOf(param.getId()), tokenInfo.getOpenid(), param.getRemind() == null || param.getRemind());
+
+            //转换开始的时间
+            SimpleDateFormat sdf = new SimpleDateFormat();
+            sdf.applyPattern("yyyy-MM-dd HH:mm");
+            Date startDate = sdf.parse(param.getDate() + " " + param.getStartTime());
+
+            //获取所有需要提醒的用户openid
+            ArrayList<String> openidList = meetingMapper.selectParticipantUserByMeetingAndNeedRemind(String.valueOf(param.getId()));
+            for (String theOpenid : openidList) {
+                //发送通知
+                SendNoticeResult result = wechatUtils.sendNotice(
+                        theOpenid,
+                        WechatTemplateEnum.REVISION_MEETING.id,
+                        new Param(
+                                "thing1", param.getName(),
+                                "thing3", getReservationResult.getName(),
+                                "time2", param.getDate() + " " + param.getStartTime()
+                        ),
+                        null,
+                        null,
+                        null
+                );
+                if(!result.getErrcode().equals("0")){
+                    log.warn("==用户提醒发送失败==");
+                    log.warn("result:      {}",result);
+                    log.warn("openid:      {}",theOpenid);
+                    log.warn("meeting:     {}",getReservationResult.getName());
+                    log.warn("meetingName: {}",getReservationResult.getMeetingName());
+                    log.warn("time         {}",param.getDate()+" "+param.getStartTime()+" "+param.getEndTime());
+                    log.warn("=================");
+                }
+            }
+
+            //开启会议提醒
+//            schedulerService.starSendRemindTask(String.valueOf(meetingPo.getId()), startDate);
+            schedulerService.modifySendRemindTask(String.valueOf(meetingPo.getId()), startDate);
+        }
+        //正常返回结果
+        return CommonResult.success(null);
+    }
+
+    @Override
+    public CommonResult joinReservation(JoinReservationParam param) {
+        //AOP实现token校验
+
+        //获取token中内容
+        UserTokenInfo tokenInfo = userService.getUserTokenInfo(param.getToken());
+
+        if(param.getJoin()){
+            //查询是否在表中
+            ArrayList<String> users = meetingMapper.selectParticipantUserByMeetingAndNeedRemind(String.valueOf(param.getId()));
+            boolean flag = false;
+            for (String user : users) {
+                if(user.equals(tokenInfo.getOpenid())){
+                    flag = true;
+                    break;
+                }
+            }
+
+            if(!flag){
+                meetingMapper.insertParticipant(tokenInfo.getOpenid(), param.getId(), true);
+            }
+        }else{
+            if (meetingMapper.selectIsCreator(String.valueOf(param.getId()), tokenInfo.getOpenid()) != null) {
+                //如果是创建者就不能退出会议
+                return CommonResult.serverError("创建者不能退出会议");
+            }
+            //退出会议
+            meetingMapper.deleteParticipantRemindByMeetingAndOpenid(String.valueOf(param.getId()), tokenInfo.getOpenid());
+        }
         return CommonResult.success(null);
     }
 

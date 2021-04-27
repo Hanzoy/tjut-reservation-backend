@@ -45,4 +45,18 @@ public interface MeetingService {
      * @return 返回对象
      */
     CommonResult remindReservation(RemindReservationParam param);
+
+    /**
+     * 修改会议
+     * @param param 参数
+     * @return 返回对象
+     */
+    CommonResult modifyReservation(ModifyReservationParam param);
+
+    /**
+     * 加入或者退出会议
+     * @param param 参数
+     * @return 返回对象
+     */
+    CommonResult joinReservation(JoinReservationParam param);
 }

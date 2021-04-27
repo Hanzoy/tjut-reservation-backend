@@ -7,6 +7,21 @@
             VALUES(#{name}, #{creator}, #{roomId}, #{date}, #{startTime}, #{endTime}, #{content})
     </insert>
 
+    <update id="updateMeeting">
+        update
+            tjut_reservation.meeting
+        set
+            name = #{name},
+            creator = #{creator},
+            room_id = #{roomId},
+            date = #{date},
+            start_time = #{startTime},
+            end_time = #{endTime},
+            content = #{content}
+        where
+              id = #{id}
+    </update>
+
     <select id="selectMeetingByDate" resultType="com.hanzoy.tjutreservation.pojo.po.MeetingPo">
         select
                id, name, creator, room_id AS roomId, date, start_time AS startTime, end_time AS endTime, content
@@ -198,4 +213,23 @@
           and
               user = #{openid}
     </update>
+
+    <select id="selectMeetingRoomIdByMeetingId" resultType="integer">
+        select
+               room_id
+        from
+             meeting
+        where
+              id = #{meetingId}
+    </select>
+
+    <delete id="deleteParticipantRemindByMeetingAndOpenid">
+        delete from
+                    participant
+        where
+              meeting = #{meetingId}
+          and
+              user = #{openid}
+    </delete>
+
 </mapper>

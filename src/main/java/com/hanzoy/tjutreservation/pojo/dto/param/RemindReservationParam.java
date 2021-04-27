@@ -20,7 +20,7 @@ public class RemindReservationParam {
     /**
      * 会议id
      */
-    @Pattern(regexp = "^[0-9]*$", message = "格式错误")
+    @NotNull(message = "不能为空")
     private Integer id;
 
     /**

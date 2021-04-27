@@ -10,9 +10,15 @@ import java.util.ArrayList;
 public interface MeetingMapper {
     /**
      * 向数据库插入会议信息
-     * @param meeting 带插入的会议数据
+     * @param meeting 待插入的会议数据
      */
     void insertMeeting(MeetingPo meeting);
+
+    /**
+     * 向数据库修改会议信息
+     * @param meeting 待修改的会议数据
+     */
+    void updateMeeting(MeetingPo meeting);
 
     /**
      * 通过date来搜索会议
@@ -37,7 +43,7 @@ public interface MeetingMapper {
     void insertParticipant(@Param("openid") String openid, @Param("meeting") Integer meeting, @Param("remind") Boolean remind);
 
     /**
-     * 查询每个月的总犯规次数
+     * 查询每个月的总预约次数
      * @param year 查询的年份
      * @param month 查询的月份
      * @param openid 用户openid
@@ -46,7 +52,7 @@ public interface MeetingMapper {
     Integer selectCountForYearByMonth(@Param("year") String year, @Param("month") String month, @Param("openid") String openid);
 
     /**
-     * 查询每年每个月用户的使用样本
+     * 查询每年每个月用户的使用数据
      * @param year 年
      * @param month 月
      * @param openid 用户openid
@@ -141,4 +147,17 @@ public interface MeetingMapper {
      * @param remind 是否提醒
      */
     void updateParticipantRemindByMeetingAndOpenid(@Param("meetingId")String meetingId, @Param("openid")String openid, @Param("remind")Boolean remind);
+
+    /**
+     * 通过openid和meetingId退出会议
+     * @param meetingId 会议id
+     * @param openid 用户openid
+     */
+    void deleteParticipantRemindByMeetingAndOpenid(@Param("meetingId")String meetingId, @Param("openid")String openid);
+    /**
+     * 通过会议ia查询会议室id
+     * @param meetingId 会议id
+     * @return 会议室id
+     */
+    Integer selectMeetingRoomIdByMeetingId(@Param("meetingId") String meetingId);
 }
